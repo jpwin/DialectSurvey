@@ -1,10 +1,12 @@
 import sys
 import getopt
 import urllib
+#import shared
+from shared import *
 
 
 
-statePostals=["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"]
+#statePostals=["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"]
 
 downloadDirectory = "data/raw/"
 
@@ -35,11 +37,6 @@ def download(url):
     print "successfully downloaded " + url
 
 
-
-class Usage(Exception):
-    def __init__(self, msg):
-        self.msg = msg
-
 def main(argv=None):
     if argv is None:
         argv = sys.argv
@@ -63,8 +60,13 @@ def main(argv=None):
         print >>sys.stderr, "for help use --help"
         return 2
 
+
+
     for state in statePostals:
         download("http://www4.uwm.edu/FLL/linguistics/dialect/staticmaps/state_" + state + ".html")
+
+
+
 
 if __name__ == "__main__":
     sys.exit(main())
