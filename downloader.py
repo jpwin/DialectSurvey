@@ -1,21 +1,20 @@
 import sys
 import getopt
 import urllib
-#import shared
+
 from shared import *
 
 
 
-#statePostals=["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"]
 
-downloadDirectory = "data/raw/"
+download_directory = "data/raw/"
 
 #input a url and download the html source to the download directory
 def download(url):
     fname = url.split("/")[-1]
     print "downloading " + url
     try:
-        f = open(downloadDirectory + fname)
+        f = open(download_directory + fname)
         f.close()
         print "already downloaded"
         #maybe do a timestamp check or compare the two files to see if changed
@@ -24,7 +23,7 @@ def download(url):
         pass
 
         #no worries
-    f = file(downloadDirectory + fname, "w")
+    f = file(download_directory + fname, "w")
     try:
         u = urllib.urlopen(url)
         source = u.read()
@@ -62,7 +61,8 @@ def main(argv=None):
 
 
 
-    for state in statePostals:
+
+    for state in state_postals:
         download("http://www4.uwm.edu/FLL/linguistics/dialect/staticmaps/state_" + state + ".html")
 
 

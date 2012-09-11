@@ -1,16 +1,16 @@
 import sys
 import getopt
 import re
-#import shared
 import pycassa
 from pycassa.pool import ConnectionPool
 from pycassa.columnfamily import ColumnFamily
+
 from shared import *
 
 pool = ConnectionPool('DialectSurvey')
-statesFam = ColumnFamily(pool, 'states')
-questionsFam = ColumnFamily(pool, 'questions')
-choicesFam = ColumnFamily(pool, 'choices')
+states_family = ColumnFamily(pool, 'states')
+questions_family = ColumnFamily(pool, 'questions')
+choices_family = ColumnFamily(pool, 'choices')
 
 
 
@@ -22,7 +22,7 @@ class State(object):
         self.name=n
         #list
         self.questions={}
-    def addQuestion(self,q):
+    def add_question(self,q):
         #self.questions.append(q)
         self.questions[q.number] = q
 
@@ -58,42 +58,42 @@ states = {}
 
 
 
-nameReStr = "<title>Dialect Survey Results: (?P<state>[a-zA-Z ]+) ?</title>"
-nameRe = re.compile(nameReStr)
+name_re_str = "<title>Dialect Survey Results: (?P<state>[a-zA-Z ]+) ?</title>"
+name_re = re.compile(name_re_str)
 
-questionReStr = """<table cellpadding="0" cellspacing="0" border="0"><tr><td colspan="4"><b>.*?</table>"""
-questionRe = re.compile(questionReStr,re.DOTALL)
+questions_re_str = """<table cellpadding="0" cellspacing="0" border="0"><tr><td colspan="4"><b>.*?</table>"""
+question_re = re.compile(questions_re_str,re.DOTALL)
 
-questionInfoReStr = """<table cellpadding="0" cellspacing="0" border="0"><tr><td colspan="4"><b>(?P<num>\d{1,3})\. (?P<text>.*?)</b></td></tr>"""
-questionInfoRe = re.compile(questionInfoReStr)
+question_info_re_str = """<table cellpadding="0" cellspacing="0" border="0"><tr><td colspan="4"><b>(?P<num>\d{1,3})\. (?P<text>.*?)</b></td></tr>"""
+question_info_re_str = re.compile(question_info_re_str)
 
-choiceReStr = """<tr><td width`"10"></td><td>(?:<b>)? (?P<letter>[a-z])\. (?P<optiontext>.*?) (?:</b>)?</td><td width="20"></td><td>(?:<b>)? \((?P<percentage>(?:[0-9]|\.){1,5}?)%\) (?:</b>)?</td></tr>"""
-choiceRe = re.compile(choiceReStr)
+choice_re_str = """<tr><td width`"10"></td><td>(?:<b>)? (?P<letter>[a-z])\. (?P<optiontext>.*?) (?:</b>)?</td><td width="20"></td><td>(?:<b>)? \((?P<percentage>(?:[0-9]|\.){1,5}?)%\) (?:</b>)?</td></tr>"""
+choice_re = re.compile(choice_re_str)
 
 
 #returns a state object from a state html file
-def getState(stateFileName, statePostal):
+def get_state(state_file_name, state_postal):
     #if this doesn't work, we have a problem
-    f = open(stateFileName)
-    stateSource = f.read()
+    f = open(state_file_name)
+    state_source = f.read()
     f.close()
-    stateName = nameRe.search(stateSource).groupdict()['state']
-    state = State(statePostal, stateName)
+    state_name = name_re.search(state_source).groupdict()['state']
+    state = State(state_postal, state_name)
 
-    statesFam.insert(statePostal, {'name' : stateName})
+    states_family.insert(state_postal, {'name' : state_name})
 
-    for questionText in questionRe.findall(stateSource):
-        info = questionInfoRe.search(questionText).groupdict()
+    for question_text in question_re.findall(state_source):
+        info = question_info_re_str.search(question_text).groupdict()
         question = Question(info['num'], info['text'])
-        state.addQuestion(question)
+        state.add_question(question)
 
-        questionsFam.insert(question.number, {'text': info['text']});
+        questions_family.insert(question.number, {'text': info['text']});
 
-        for choiceText in choiceRe.findall(questionText):
-            question.add(Choice(*choiceText))
-            #print choiceText
-            key = statePostal + str(question.number) + choiceText[0]
-            choicesFam.insert(key, {'percent' : float(choiceText[2]), 'letter': choiceText[0], 'state': statePostal, 'text': choiceText[1], 'question': question.number})
+        for choice_text in choice_re.findall(question_text):
+            question.add(Choice(*choice_text))
+            #print choice_text
+            key = state_postal + str(question.number) + choice_text[0]
+            choices_family.insert(key, {'percent' : float(choice_text[2]), 'letter': choice_text[0], 'state': state_postal, 'text': choice_text[1], 'question': question.number})
 
 
     return state
@@ -142,12 +142,10 @@ def main(argv=None):
         return 2
 
     print "starting main"
-    #statePostal = "OK"
-    for statePostal in statePostals:
-        state = getState(downloadDirectory + "state_" + statePostal + ".html", statePostal)
-        states[statePostal] = state
-
-
+    #state_postal = "OK"
+    for state_postal in state_postals:
+        state = get_state(download_directory + "state_" + state_postal + ".html", state_postal)
+        states[state_postal] = state
 
 
 
