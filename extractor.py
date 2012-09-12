@@ -13,56 +13,59 @@ questions_family = ColumnFamily(pool, 'questions')
 choices_family = ColumnFamily(pool, 'choices')
 
 
-
 class State(object):
-    def __init__(self,p,n):
+    def __init__(self, p, n):
         #string
-        self.postal=p
+        self.postal = p
         #string
-        self.name=n
+        self.name = n
         #list
-        self.questions={}
-    def add_question(self,q):
+        self.questions = {}
+
+    def add_question(self, q):
         #self.questions.append(q)
         self.questions[q.number] = q
 
-
-
-
     def __repr__(self):
-        return "<S: "+self.postal+">"
+        return "<S: " + self.postal + ">"
+
+
 class Question(object):
-    def __init__(self,n,t):
+    def __init__(self, n, t):
         #int
-        self.number=int(n)
+        self.number = int(n)
         #string
-        self.text=t
+        self.text = t
         #list
-        self.choices=[]
+        self.choices = []
+
     def add(self, choice):
         self.choices.append(choice)
+
     def __repr__(self):
-        return "<Q: "+self.text+">"
+        return "<Q: " + self.text + ">"
+
+
 class Choice(object):
-    def __init__(self,l,t,p):
+    def __init__(self, l, t, p):
         #string
-        self.letter=l
+        self.letter = l
         #string
-        self.text=t
+        self.text = t
         #float
-        self.percentage=float(p)
+        self.percentage = float(p)
+
     def __repr__(self):
-        return "<C: "+self.text+">"
+        return "<C: " + self.text + ">"
 
 states = {}
-
 
 
 name_re_str = "<title>Dialect Survey Results: (?P<state>[a-zA-Z ]+) ?</title>"
 name_re = re.compile(name_re_str)
 
 questions_re_str = """<table cellpadding="0" cellspacing="0" border="0"><tr><td colspan="4"><b>.*?</table>"""
-question_re = re.compile(questions_re_str,re.DOTALL)
+question_re = re.compile(questions_re_str, re.DOTALL)
 
 question_info_re_str = """<table cellpadding="0" cellspacing="0" border="0"><tr><td colspan="4"><b>(?P<num>\d{1,3})\. (?P<text>.*?)</b></td></tr>"""
 question_info_re_str = re.compile(question_info_re_str)
@@ -80,42 +83,24 @@ def get_state(state_file_name, state_postal):
     state_name = name_re.search(state_source).groupdict()['state']
     state = State(state_postal, state_name)
 
-    states_family.insert(state_postal, {'name' : state_name})
+    states_family.insert(state_postal, {'name': state_name})
 
     for question_text in question_re.findall(state_source):
         info = question_info_re_str.search(question_text).groupdict()
         question = Question(info['num'], info['text'])
         state.add_question(question)
 
-        questions_family.insert(question.number, {'text': info['text']});
+        questions_family.insert(question.number, {'text': info['text']})
 
         for choice_text in choice_re.findall(question_text):
             question.add(Choice(*choice_text))
             #print choice_text
             key = state_postal + str(question.number) + choice_text[0]
-            choices_family.insert(key, {'percent' : float(choice_text[2]), 'letter': choice_text[0], 'state': state_postal, 'text': choice_text[1], 'question': question.number})
-
+            choices_family.insert(key, {'percent': float(choice_text[2]),
+                                        'letter': choice_text[0], 'state': state_postal,
+                                        'text': choice_text[1], 'question': question.number})
 
     return state
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def main(argv=None):
@@ -131,10 +116,10 @@ def main(argv=None):
         for o, a in opts:
             if o in ("-h", "--help"):
                 print __doc__
-                return 0;
+                return 0
         # process arguments
         for arg in args:
-            process(arg) # process() is defined elsewhere
+            process(arg)  # process() is defined elsewhere
 
     except Usage, err:
         print >>sys.stderr, err.msg
@@ -144,10 +129,9 @@ def main(argv=None):
     print "starting main"
     #state_postal = "OK"
     for state_postal in state_postals:
-        state = get_state(download_directory + "state_" + state_postal + ".html", state_postal)
+        state = get_state(download_directory
+                          + "state_" + state_postal + ".html", state_postal)
         states[state_postal] = state
-
-
 
 
 if __name__ == "__main__":

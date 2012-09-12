@@ -5,11 +5,11 @@ import urllib
 from shared import *
 
 
-
-
 download_directory = "data/raw/"
 
 #input a url and download the html source to the download directory
+
+
 def download(url):
     fname = url.split("/")[-1]
     print "downloading " + url
@@ -32,7 +32,7 @@ def download(url):
         f.close()
     except Exception:
         print "exception! "
-        f.close();
+        f.close()
     print "successfully downloaded " + url
 
 
@@ -49,23 +49,18 @@ def main(argv=None):
         for o, a in opts:
             if o in ("-h", "--help"):
                 print __doc__
-                return 0;
+                return 0
         # process arguments
         for arg in args:
-            process(arg) # process() is defined elsewhere
+            process(arg)  # process() is defined elsewhere
 
     except Usage, err:
         print >>sys.stderr, err.msg
         print >>sys.stderr, "for help use --help"
         return 2
 
-
-
-
     for state in state_postals:
         download("http://www4.uwm.edu/FLL/linguistics/dialect/staticmaps/state_" + state + ".html")
-
-
 
 
 if __name__ == "__main__":
